@@ -1,0 +1,13 @@
+<html>
+<head>
+	<title> {{ user.username }} </title>
+
+</head>
+<body>
+	<h1>{{ user.username }}</h1><br/> <br/>
+	email: {{ user.email }} <br/>
+	password: {{ user.password }} <br/>
+	<br/>
+	<a href="{{ url_for('show_users') }}"> back </a>
+</body>
+</html>
