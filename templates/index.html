@@ -1,0 +1,14 @@
+<html>
+<head>
+	<title> Main </title>
+
+</head>
+<body>
+	{% for sub in subs %}
+	<a href="{{ url_for('show_sub',sid=sub.id) }}">{{ sub.name }}</a>
+	<br/>
+	{% endfor %}
+	<br/><br/>
+	<a href="{{ url_for('create_sub') }}"> Create new Sub </a>
+</body>
+</html>

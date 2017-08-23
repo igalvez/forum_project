@@ -1,0 +1,19 @@
+<html>
+<head>
+	<title> {{ post.name }} </title>
+
+</head>
+<body>
+	<h2> {{ post.title }} </h2>
+	<br/>
+	{{ post.message }} 
+	<br/><br/><br/>
+	{% for comment in comments %}
+	<br/>
+	{% endfor %}
+
+	<br/><br/>
+	<a href="{{ url_for('show_sub',sid=sub.id) }}"> Back </a>
+
+</body>
+</html>

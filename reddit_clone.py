@@ -17,15 +17,18 @@ dbsession = DBSession()
 
 @app.route('/')
 def main():
-	return 'Hello World'
+	subs = dbsession.query(Sub).all()
+	return render_template('index.html',subs=subs)
+	
 
 @app.route('/dashboard')
 def dashboard():
-	if 'username' not in session:
+	if 'uid' not in session:
 		return 'Login required to access this feature'
-	username = session['username']
-	user = dbsession.query(User).filter_by(username=username).one()
+	uid = session['uid']
+	user = dbsession.query(User).filter_by(id=uid).one()
 	return redirect(url_for('show_user',user_id=user.id))
+
 
 @app.route('/signup', methods=['GET','POST'])
 def new_user():
@@ -52,9 +55,9 @@ def login():
 		except sqlalchemy.orm.exc.NoResultFound:
 			return "<html> <body>Wrong username or password <br/><br/> <a href=%s>back</a></body></html>"%url_for('login')
 		if user.verify_password(request.form['password']):
-			session['username'] = user.username
+			session['uid'] = user.id
 			session['loggedin'] = True
-			return redirect(url_for('dashboard'))
+			return redirect(url_for('main'))
 		else:
 			return "<html> <body>Wrong username or password <br/><br/> <a href=%s>back</a></body></html>"%url_for('login')
 	else:
@@ -65,9 +68,58 @@ def login():
 @app.route('/logout/')
 def logout():
 	#if 'username' in session:
-	session.pop('username',None)
+	session.pop('uid',None)
 	session.pop('loggedin',None)
 	return redirect(url_for('login'))
+
+
+
+@app.route('/createsub/',methods=['GET','POST'])
+def create_sub():
+	if 'uid' not in session:
+		return redirect(url_for('login'))
+
+	if request.method == 'POST':
+		newSub = Sub(name=request.form['subname'], descr=request.form['desc'],admin_id=int(session['uid']))
+		dbsession.add(newSub)
+		dbsession.commit()
+		return redirect(url_for('show_sub',sid=newSub.id))
+	return render_template('create_sub.html')
+
+
+@app.route('/sub/<int:sid>')
+def show_sub(sid):
+	sub = dbsession.query(Sub).filter_by(id=sid).one()
+	posts = dbsession.query(Post).filter_by(sub_id=sid)	
+	return render_template('show_sub.html', posts=posts, sub=sub)
+
+@app.route('/sub/<int:sid>/create_post',methods=['GET','POST'])
+def create_post(sid):
+	if 'uid' not in session:
+		return redirect(url_for('login'))
+	
+	sub = dbsession.query(Sub).filter_by(id=sid).one()
+	if request.method == 'POST':
+		newPost = Post(title=request.form['title'], message=request.form['message'], sub_id=sid, user_id=int(session['uid']))
+		dbsession.add(newPost)
+		dbsession.commit()
+		return redirect(url_for('show_post',sid=sub.id,pid=newPost.id))
+	return render_template('create_post.html', sub=sub)	
+
+
+@app.route('/sub/<int:sid>/post/<int:pid>')
+def show_post(sid,pid):
+	sub = dbsession.query(Sub).filter_by(id=sid).one()
+	post = dbsession.query(Post).filter_by(id=pid).one()
+	comments = dbsession.query(Comment).filter_by(post_id=post.id)
+	return render_template('show_post.html', sub=sub, post=post, comments=comments)
+
+
+
+
+
+
+
 
 @app.route('/admin/allusers')
 def show_users():

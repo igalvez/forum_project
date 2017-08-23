@@ -34,8 +34,8 @@ class Sub(Base):
 	__tablename__ = 'sub'
 	id = Column(Integer, primary_key=True)
 	name = Column(String(80),nullable=False)
-	Descr = Column(Text)
-	Wiki = Column(Text)
+	descr = Column(Text)
+	wiki = Column(Text)
 	admin_id = Column(Integer, ForeignKey('user.id'))
 	admin = relationship(User)
 

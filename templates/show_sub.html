@@ -1,0 +1,18 @@
+<html>
+<head>
+	<title> {{ sub.name }} </title>
+
+</head>
+<body>
+	<h2> {{ sub.name }} </h2>
+	{% for post in posts %}
+	<a href="{{ url_for('show_post',sid=sub.id,pid=post.id) }}">{{ post.title }}</a>
+	<br/>
+	{% endfor %}
+
+	<br/><br/>
+	<a href="{{ url_for('create_post',sid=sub.id) }}"> Create new post </a><br/>
+	<a href="{{ url_for('main') }}"> Back </a>
+
+</body>
+</html>
