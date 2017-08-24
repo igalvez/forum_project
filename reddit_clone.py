@@ -15,6 +15,13 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 dbsession = DBSession()
 
+
+def get_comments(pid,cid):
+	clist = dbsession.query(Comment).filter_by(post_id=pid).filter_by(parent_id=cid).all()
+	return clist
+
+
+#------------------------------------------------------------
 @app.route('/')
 def main():
 	subs = dbsession.query(Sub).all()
@@ -87,6 +94,7 @@ def create_sub():
 	return render_template('create_sub.html')
 
 
+
 @app.route('/sub/<int:sid>')
 def show_sub(sid):
 	sub = dbsession.query(Sub).filter_by(id=sid).one()
@@ -111,12 +119,26 @@ def create_post(sid):
 def show_post(sid,pid):
 	sub = dbsession.query(Sub).filter_by(id=sid).one()
 	post = dbsession.query(Post).filter_by(id=pid).one()
-	comments = dbsession.query(Comment).filter_by(post_id=post.id)
-	return render_template('show_post.html', sub=sub, post=post, comments=comments)
+	comments = dbsession.query(Comment).filter_by(post_id=post.id).filter_by(parent_id=0)
+	return render_template('show_post.html', sub=sub, post=post, comments=comments, get_comments=get_comments )
 
 
+@app.route('/sub/<int:sid>/post/<int:pid>/<int:cid>/writecomment/',methods=['GET','POST'])
+def write_comment(sid,pid,cid):
+	if 'uid' not in session:
+		return redirect(url_for('login'))
 
-
+	if request.method == 'POST':
+		newComment = Comment(message=request.form['message'], post_id=pid, parent_id=cid)
+		dbsession.add(newComment)
+		dbsession.commit()
+		return redirect(url_for('show_post',sid=sid,pid=pid))
+	
+	if cid!=0:
+		element = dbsession.query(Comment).filter_by(id=cid).one()
+	else:
+		element = dbsession.query(Post).filter_by(id=pid).one()
+	return render_template('write_comment.html',element=element, sid=sid, pid=pid, cid=cid)
 
 
 

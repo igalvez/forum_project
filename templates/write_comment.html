@@ -1,0 +1,14 @@
+<html>
+<head>
+	<title> Write Comment </title>
+
+</head>
+<body>
+	{{ element.message }}
+	<form action = "{{ url_for('write_comment', sid=sid, pid=pid, cid=cid) }}", method = 'post'>
+	    <textarea name='message' rows='10' cols='30'></textarea>
+		<br/><br/>
+		<input type='submit' value='ok'/>
+	</form>
+</body>
+</html>

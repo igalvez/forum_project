@@ -4,14 +4,28 @@
 
 </head>
 <body>
+	{% macro show_comments(parent_id) %}
+		{% set clist = get_comments(post.id,parent_id) %}
+		{% if clist is defined %}
+			{% for c in clist %}
+				- {{ c.message }}
+				<br/>
+				<a href="{{ url_for('write_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> comment </a>
+				<br/><br/>
+				{{ show_comments(c.id) }}
+			{% endfor %}
+		{% endif %}
+	{% endmacro %}
+
+
+	<br/><br/>
 	<h2> {{ post.title }} </h2>
 	<br/>
 	{{ post.message }} 
 	<br/><br/><br/>
-	{% for comment in comments %}
+	{{ show_comments(0) }}
 	<br/>
-	{% endfor %}
-
+	<a href="{{ url_for('write_comment',sid=sub.id, pid=post.id, cid=0)}}">Comment </a>
 	<br/><br/>
 	<a href="{{ url_for('show_sub',sid=sub.id) }}"> Back </a>
 

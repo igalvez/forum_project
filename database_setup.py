@@ -60,6 +60,7 @@ class Comment(Base):
 	upvotes = Column(Integer, default=0)
 	user_id = Column(Integer,ForeignKey('user.id'))
 	post_id = Column(Integer,ForeignKey('post.id'))
+	parent_id = Column(Integer,ForeignKey('comment.id'))
 	user = relationship(User)
 	post = relationship(Post)
 
