@@ -48,7 +48,7 @@ class Post(Base):
 	upvotes = Column(Integer,default=0)
 	user_id = Column(Integer,ForeignKey('user.id'))
 	sub_id = Column(Integer,ForeignKey('sub.id'))
-	user = relationship(User)
+	user = relationship(User,uselist=True)
 	sub = relationship(Sub)
 
 

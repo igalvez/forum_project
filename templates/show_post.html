@@ -1,18 +1,25 @@
 <html>
+<meta content="text/html; charset=UTF-8" http-equiv="content-type" />
 <head>
 	<title> {{ post.name }} </title>
 
 </head>
 <body>
-	{% macro show_comments(parent_id) %}
+	{% macro show_comments(parent_id,count) %}
 		{% set clist = get_comments(post.id,parent_id) %}
+		{% set countr = count + 1 %}
+		{% set prefix = '-'*countr %}
+		{% set prefix2 = "."*countr %}
 		{% if clist is defined %}
 			{% for c in clist %}
-				- {{ c.message }}
+				{{ prefix2 }} Author: {{ get_author(c.user_id) }} <br/>
+				{{ prefix }}
+				{{ c.message }}
 				<br/>
-				<a href="{{ url_for('write_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> comment </a>
+				{{ prefix2 }}<a href="{{ url_for('write_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> comment </a>
+				&nbsp &nbsp <a href="{{ url_for('delete_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> delete </a>
 				<br/><br/>
-				{{ show_comments(c.id) }}
+				{{ show_comments(c.id,countr) }}
 			{% endfor %}
 		{% endif %}
 	{% endmacro %}
@@ -21,9 +28,10 @@
 	<br/><br/>
 	<h2> {{ post.title }} </h2>
 	<br/>
+	Author: {{ get_author(post.user_id) }} <br/>
 	{{ post.message }} 
 	<br/><br/><br/>
-	{{ show_comments(0) }}
+	{{ show_comments(0,0) }}
 	<br/>
 	<a href="{{ url_for('write_comment',sid=sub.id, pid=post.id, cid=0)}}">Comment </a>
 	<br/><br/>

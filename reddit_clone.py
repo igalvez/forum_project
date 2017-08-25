@@ -20,6 +20,10 @@ def get_comments(pid,cid):
 	clist = dbsession.query(Comment).filter_by(post_id=pid).filter_by(parent_id=cid).all()
 	return clist
 
+def get_author(uid):
+	user = dbsession.query(User).filter_by(id=uid).first()
+	print ' user obj %s'%str(user)
+	return user.username 
 
 #------------------------------------------------------------
 @app.route('/')
@@ -120,7 +124,11 @@ def show_post(sid,pid):
 	sub = dbsession.query(Sub).filter_by(id=sid).one()
 	post = dbsession.query(Post).filter_by(id=pid).one()
 	comments = dbsession.query(Comment).filter_by(post_id=post.id).filter_by(parent_id=0)
-	return render_template('show_post.html', sub=sub, post=post, comments=comments, get_comments=get_comments )
+	print "comments objs %s"%str(comments)
+	#print "comment author: %s"%post.user.username
+	#print "user obj: %s"%str(post.user)
+	#user = dbsession.query(User).filter_by(id=session['uid']).one()
+	return render_template('show_post.html',sub=sub, post=post, comments=comments, get_comments=get_comments, get_author=get_author) #, username=user.username )
 
 
 @app.route('/sub/<int:sid>/post/<int:pid>/<int:cid>/writecomment/',methods=['GET','POST'])
@@ -129,7 +137,7 @@ def write_comment(sid,pid,cid):
 		return redirect(url_for('login'))
 
 	if request.method == 'POST':
-		newComment = Comment(message=request.form['message'], post_id=pid, parent_id=cid)
+		newComment = Comment(message=request.form['message'], user_id=session['uid'], post_id=pid, parent_id=cid)
 		dbsession.add(newComment)
 		dbsession.commit()
 		return redirect(url_for('show_post',sid=sid,pid=pid))
@@ -140,7 +148,12 @@ def write_comment(sid,pid,cid):
 		element = dbsession.query(Post).filter_by(id=pid).one()
 	return render_template('write_comment.html',element=element, sid=sid, pid=pid, cid=cid)
 
-
+@app.route('/sub/<int:sid>/post/<int:pid>/<int:cid>/deletecomment/')
+def delete_comment(sid,pid,cid):
+	comment= dbsession.query(Comment).filter_by(id=cid).one()
+	dbsession.delete(comment)
+	dbsession.commit()
+	return redirect(url_for('show_post', sid=sid,pid=pid))	
 
 
 @app.route('/admin/allusers')
