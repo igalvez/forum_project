@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session,flash
 app = Flask(__name__)
 app.secret_key = 'teste'
 
@@ -23,6 +23,9 @@ def get_comments(pid,cid):
 def get_author(uid):
 	user = dbsession.query(User).filter_by(id=uid).first()
 	print ' user obj %s'%str(user)
+	print "id = " + str(uid)
+	if not user:
+		return '[deleted]'
 	return user.username 
 
 #------------------------------------------------------------
@@ -64,17 +67,19 @@ def login():
 		try:
 			user = dbsession.query(User).filter_by(username=request.form['username']).one()
 		except sqlalchemy.orm.exc.NoResultFound:
-			return "<html> <body>Wrong username or password <br/><br/> <a href=%s>back</a></body></html>"%url_for('login')
-		if user.verify_password(request.form['password']):
-			session['uid'] = user.id
-			session['loggedin'] = True
-			return redirect(url_for('main'))
+			flash("Wrong username or password")
+			#return render_template('login.html')
 		else:
-			return "<html> <body>Wrong username or password <br/><br/> <a href=%s>back</a></body></html>"%url_for('login')
+			if user.verify_password(request.form['password']):
+				session['uid'] = user.id
+				session['loggedin'] = True
+				return redirect(url_for('main'))
+			else:
+				flash("Wrong username or password")
 	else:
 		if 'loggedin' in session:
 			return 'User already logged in'
-		return render_template('login.html')
+	return render_template('login.html')
 
 @app.route('/logout/')
 def logout():
@@ -154,6 +159,19 @@ def delete_comment(sid,pid,cid):
 	dbsession.delete(comment)
 	dbsession.commit()
 	return redirect(url_for('show_post', sid=sid,pid=pid))	
+
+
+
+@app.errorhandler(404)
+def page_not_found(err):
+	return "oh noo! This is not the page you are looking for! " + str(err)
+
+
+
+
+
+
+
 
 
 @app.route('/admin/allusers')

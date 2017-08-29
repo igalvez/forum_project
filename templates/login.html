@@ -1,9 +1,6 @@
-<html>
-<head>
-	<title> Login </title>
-
-</head>
-<body>
+{% extends "header.html" %}
+{% block title %} login {% endblock %}
+{% block body %}
 	<form action = "{{ url_for('login') }}", method = 'post'>
 		Username: <input type='text' name='username'/>
 		<br/>
@@ -11,5 +8,13 @@
 		<br/><br/>
 		<input type='submit' value='Login'/>
 	</form>
-</body>
-</html>
+	{% with messages = get_flashed_messages() %}
+		{% if messages %}
+			{% for message in messages %}
+				<div class="alert alert-warning alert-dismissible" role="alert">
+					{{ message }}
+				</div>
+			{% endfor %}
+		{% endif %}
+	{% endwith %}
+{% endblock %}
