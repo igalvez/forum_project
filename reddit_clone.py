@@ -6,6 +6,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Sub, User, Post, Comment
 import sqlalchemy.orm.exc
+from wtforms import Form, validators, StringField, PasswordField, SubmitField
 
 
 
@@ -14,6 +15,17 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 dbsession = DBSession()
+
+
+# FORMS ------------------------------------
+
+class registrationForm(Form):
+	username = StringField("Username",[validators.Required()])
+	password = PasswordField("Password",[validators.Required(),validators.Length(min=8,max=30,message="Minimum password length is 8")])
+	confirm = PasswordField("Confirm Password",[validators.Length(max=30),validators.EqualTo(password,message="Passwords should match")])
+	email = StringField("Email",[validators.Email()])
+	submit = SubmitField("Register")
+
 
 
 def get_comments(pid,cid):
@@ -46,20 +58,25 @@ def dashboard():
 
 @app.route('/signup', methods=['GET','POST'])
 def new_user():
-	if request.method == 'POST':
-		print ' On post method'
-		print ' will create new user'
-		newUser = User(username=request.form['username'], password=request.form['password'], email=request.form['email'])
-		print 'new user created'
-		print 'adding to dbsession'
-		dbsession.add(newUser)
-		print 'added to dvsession'
-		print 'updating dbsession'
-		dbsession.commit()
-		print 'done'
-		return redirect(url_for('show_users'))
+	form = registrationForm(request.form)
+	if request.method == 'POST' and form.validate():
+		isuser = dbSession.query(User).filter_by(username=form.username.data).one()
+		if isuser:
+			flash("Username already exists")
+			render_template('signup.html',form=form)
+
+		try:
+			newUser = User(username=request.form['username'], password=request.form['password'], email=request.form['email'])		
+			dbsession.add(newUser)
+			dbsession.commit()
+			session['uid'] = newUser.id
+			session['loggedin'] = True
+			return redirect(url_for('show_users'))
+		except:
+			flash("Error: Could not register user")
+			return render_template('signup.html',form=form)
 	else:
-		return render_template('signup.html')
+		return render_template('signup.html',form=form)
 
 @app.route('/login/', methods=['GET','POST'])
 def login():

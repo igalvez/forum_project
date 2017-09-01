@@ -1,12 +1,11 @@
 {% extends "header.html" %}
 {% block title %} login {% endblock %}
 {% block body %}
-	<form action = "{{ url_for('login') }}", method = 'post'>
-		Username: <input type='text' name='username'/>
-		<br/>
-		Password: <input type='text' name='password'/>
-		<br/><br/>
-		<input type='submit' value='Login'/>
+	Login: <br/><br/>
+	<form action = "{{ url_for('login') }}", class='form-inline', method = 'post'>
+		<input type='text' class='form-control' placeholder='Username' name='username' value="{{ request.form['username'] }}"/>
+		<input type='password' class ='form-control' placeholder='Password' name='password' />
+		<input type='submit' class='btn btn-default' value='Login'/>
 	</form>
 	{% with messages = get_flashed_messages() %}
 		{% if messages %}
