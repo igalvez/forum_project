@@ -9,7 +9,9 @@
 					{{ c.message }}
 					<br/>
 					<a href="{{ url_for('write_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> comment </a>
-					&nbsp &nbsp <a href="{{ url_for('delete_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> delete </a>
+					{% if (session["uid"]==c.user_id or session["uid"]==sub.admin_id) %}
+						&nbsp &nbsp <a href="{{ url_for('delete_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> delete </a>
+					{% endif %}
 					<br/><br/>
 					{{ show_comments(c.id) }}
 				</div>

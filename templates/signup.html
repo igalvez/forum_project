@@ -1,8 +1,8 @@
 {% macro printField(field) %}
-	{{ field.label }}: {{ field(**kwargs) }}
+	{{ field.label }}: <br/> {{ field(**kwargs) }}
 	{% if field.errors %}
 		<ul class="errors">
-			{% for error in fielderrors %}
+			{% for error in field.errors %}
 				{{ error }}
 			{% endfor %}
 		</ul>
@@ -20,18 +20,26 @@
 
 {% block body %}
 
-	<form action = "{{ url_for('new_user') }}", method = 'post'>
+	<h2> Sign up </h2>
+	{% with messages = get_flashed_messages() %}
+		
+			{% for message in messages %}
+				<div class="alert alert-warning alert-dismissible" role="alert">
+					{{ message }}
+				</div>
+			{% endfor %}
+	{% endwith %}
 
-		<h2> Sign up </h2>
+	<form action = "{{ url_for('new_user') }}", method = 'post'>
+		
+		<br/>
+			{{ printField(form.username) }} <br/>
+			{{ printField(form.password) }} <br/>
+			{{ printField(form.confirm) }} <br/>
+			{{ printField(form.email )}} <br/>
 		<br/><br/>
-		<ul>
-			<li>{{ printField(form.username) }}</li>
-			<li>{{ printField(form.password) }}</li>
-			<li>{{ printField(form.confirm) }}</li>
-			<li>{{ printField(form.email )}}</li>
-		</ul>
-		<br/><br/>
-		{{ form.submit.label }}
+		<input type='submit' value='Register'/>
 		
 	</form>
+
 {% endblock %}

@@ -1,5 +1,5 @@
 import sys
-from sqlalchemy import String, Integer, Text, Time, ForeignKey, Column
+from sqlalchemy import String, Integer, Text, Time, ForeignKey, Column, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine

@@ -8,7 +8,7 @@ from database_setup import Base, Sub, User, Post, Comment
 import sqlalchemy.orm.exc
 from wtforms import Form, validators, StringField, PasswordField, SubmitField
 
-
+admins = ['gri']
 
 engine = create_engine('sqlite:///reddit.db')
 Base.metadata.bind = engine
@@ -22,8 +22,8 @@ dbsession = DBSession()
 class registrationForm(Form):
 	username = StringField("Username",[validators.Required()])
 	password = PasswordField("Password",[validators.Required(),validators.Length(min=8,max=30,message="Minimum password length is 8")])
-	confirm = PasswordField("Confirm Password",[validators.Length(max=30),validators.EqualTo(password,message="Passwords should match")])
-	email = StringField("Email",[validators.Email()])
+	confirm = PasswordField("Confirm Password",[validators.Length(max=30),validators.EqualTo('password',message="Passwords should match")])
+	email = StringField("Email",[validators.Email(message="Wrong email format")])
 	submit = SubmitField("Register")
 
 
@@ -33,6 +33,8 @@ def get_comments(pid,cid):
 	return clist
 
 def get_author(uid):
+	if uid==0:
+		return ''
 	user = dbsession.query(User).filter_by(id=uid).first()
 	print ' user obj %s'%str(user)
 	print "id = " + str(uid)
@@ -58,18 +60,21 @@ def dashboard():
 
 @app.route('/signup', methods=['GET','POST'])
 def new_user():
+	if 'uid' in session:
+		return redirect(url_for('main'))
 	form = registrationForm(request.form)
 	if request.method == 'POST' and form.validate():
-		isuser = dbSession.query(User).filter_by(username=form.username.data).one()
+		isuser = dbsession.query(User).filter_by(username=form.username.data).first()
 		if isuser:
 			flash("Username already exists")
-			render_template('signup.html',form=form)
+			return render_template('signup.html',form=form)
 
 		try:
 			newUser = User(username=request.form['username'], password=request.form['password'], email=request.form['email'])		
 			dbsession.add(newUser)
 			dbsession.commit()
 			session['uid'] = newUser.id
+			session['username'] = newUser.username
 			session['loggedin'] = True
 			return redirect(url_for('show_users'))
 		except:
@@ -89,6 +94,7 @@ def login():
 		else:
 			if user.verify_password(request.form['password']):
 				session['uid'] = user.id
+				session['username'] = user.username
 				session['loggedin'] = True
 				return redirect(url_for('main'))
 			else:
@@ -103,6 +109,7 @@ def logout():
 	#if 'username' in session:
 	session.pop('uid',None)
 	session.pop('loggedin',None)
+	session.pop('username',None)
 	return redirect(url_for('login'))
 
 
@@ -172,9 +179,16 @@ def write_comment(sid,pid,cid):
 
 @app.route('/sub/<int:sid>/post/<int:pid>/<int:cid>/deletecomment/')
 def delete_comment(sid,pid,cid):
+	if 'uid' not in session: return redirect(url_for('show_post', sid=sid,pid=pid))
+
 	comment= dbsession.query(Comment).filter_by(id=cid).one()
-	dbsession.delete(comment)
-	dbsession.commit()
+	sub = dbsession.query(Sub).filter_by(id=sid).first()
+
+	if session['uid']==comment.user_id or session['uid']==sub.admin_id:
+		comment.message = '[deleted]'
+		comment.user_id = 0
+		#dbsession.delete(comment)
+		dbsession.commit()
 	return redirect(url_for('show_post', sid=sid,pid=pid))	
 
 
