@@ -26,7 +26,7 @@ class registrationForm(Form):
 	email = StringField("Email",[validators.Email(message="Wrong email format")])
 	submit = SubmitField("Register")
 
-
+#---------------------------------------------------------
 
 def get_comments(pid,cid):
 	clist = dbsession.query(Comment).filter_by(post_id=pid).filter_by(parent_id=cid).all()
@@ -76,7 +76,7 @@ def new_user():
 			session['uid'] = newUser.id
 			session['username'] = newUser.username
 			session['loggedin'] = True
-			return redirect(url_for('show_users'))
+			return redirect(url_for('main'))
 		except:
 			flash("Error: Could not register user")
 			return render_template('signup.html',form=form)

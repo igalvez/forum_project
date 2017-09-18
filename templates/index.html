@@ -4,11 +4,16 @@
 
 </head>
 <body>
+	<a href="{{ url_for('login') }}"> Login </a> &nbsp; &nbsp; <a href="{{ url_for('new_user') }}"> Sign up </a>
+	<br><br/><br/>
+
+	<h2> SUBS </h2>
 	{% for sub in subs %}
 	<a href="{{ url_for('show_sub',sid=sub.id) }}">{{ sub.name }}</a>
 	<br/>
 	{% endfor %}
 	<br/><br/>
 	<a href="{{ url_for('create_sub') }}"> Create new Sub </a>
+	
 </body>
 </html>
