@@ -39,7 +39,7 @@ def get_author(uid):
 	print ' user obj %s'%str(user)
 	print "id = " + str(uid)
 	if not user:
-		return '[deleted]'
+		return ''
 	return user.username 
 
 #------------------------------------------------------------
@@ -148,8 +148,14 @@ def create_post(sid):
 	return render_template('create_post.html', sub=sub)	
 
 
-@app.route('/sub/<int:sid>/post/<int:pid>')
+@app.route('/sub/<int:sid>/post/<int:pid>',methods=['GET','POST'])
 def show_post(sid,pid):
+	if request.method == "POST":
+		newComment = Comment(message=request.form['message'], user_id=session['uid'], post_id=pid, parent_id=int(request.form["cid"]))
+		print " message is %s"%request.form["message"]
+		dbsession.add(newComment)
+		dbsession.commit()
+		return newComment.id
 	sub = dbsession.query(Sub).filter_by(id=sid).one()
 	post = dbsession.query(Post).filter_by(id=pid).one()
 	comments = dbsession.query(Comment).filter_by(post_id=post.id).filter_by(parent_id=0)
@@ -192,6 +198,21 @@ def delete_comment(sid,pid,cid):
 	return redirect(url_for('show_post', sid=sid,pid=pid))	
 
 
+@app.route('/sub/<int:sid>/post/<int:pid>/<int:cid>/postcomment/',methods=['GET','POST'])
+def post_comment(sid,pid,cid):
+	print "IN POST COMMENT"
+	if 'uid' not in session:
+		return redirect(url_for('login'))
+
+	print "ok"
+	if request.method == 'POST':
+		newComment = Comment(message=request.form['message'], user_id=session['uid'], post_id=pid, parent_id=cid)
+		print " message is %s"%request.form["message"]
+		dbsession.add(newComment)
+		dbsession.commit()
+		return newComment.id
+	print "this is A GET request"
+	return redirect(url_for("show_posts"))
 
 @app.errorhandler(404)
 def page_not_found(err):
@@ -213,7 +234,10 @@ def show_users():
 @app.route('/admin/user/delete/<int:user_id>/')
 def delete_user(user_id):
 	user = dbsession.query(User).filter_by(id=user_id).one()
-	dbsession.delete(user)
+	user.username = ''
+	user.email = ''
+	user.password = ''
+	#dbsession.delete(user)
 	dbsession.commit()
 	return redirect(url_for('show_users'))
 

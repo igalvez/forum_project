@@ -13,7 +13,8 @@ class User(Base):
 	id = Column(Integer, primary_key=True)
 	username = Column(String(20), nullable=False)
 	password = Column(String(20), nullable=False)
-	email = Column(String(50))
+	email = Column(String(50)) # Erase this when user is deleted
+	#active = Column(Boolean, default=True) When a user is deleted we set this to false
 
 	def __init__(self,username,password,email):
 		self.username = username

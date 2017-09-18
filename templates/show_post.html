@@ -3,15 +3,30 @@
 	{% if clist is defined %}
 		{% for c in clist %}
 			<div class='well'>		
-				<a href="#comment{{c.id}}" data-toggle="collapse">[+]</a> &nbsp;&nbsp; <a href="{{ url_for('show_user',user_id=c.user_id) }}"> Author: {{ get_author(c.user_id) }} </a> <br/>
+				<a href="comment{{c.id}}" data-toggle="collapse">[+]</a> &nbsp;&nbsp;
+				{% if c.user_id!=0 %} 
+					{% set author = get_author(c.user_id) %}
+					{% if author=="" %}
+						Author: {{ author }}
+					{% else %}
+						<a href="{{ url_for('show_user',user_id=c.user_id) }}"> Author: {{ author }} </a> <br/>
+					{% endif %}
+				{% endif %}
 				<div id="comment{{c.id}}" class="collapse in">
 					{{ prefix }}
 					{{ c.message }}
 					<br/>
-					<a href="{{ url_for('write_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> comment </a>
+					<a href="javascript:void(0)" onclick="show_hidden('write_comment{{c.id}}')"> comment </a>
 					{% if (session["uid"]==c.user_id or session["uid"]==sub.admin_id) %}
 						&nbsp &nbsp <a href="{{ url_for('delete_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> delete </a>
 					{% endif %}
+					<div id="write_comment{{c.id}}" style="display: none;">
+							<form action="#" onsubmit="post_comment('message{{c.id}}','write_comment{{c.id}}','{{c.id}}','{{post.id}}','{{sub.id}}')">
+	    						<textarea id="message{{c.id}}" name='message' rows='10' cols='30'></textarea>
+								<br/><br/>
+								<input type='submit' value='ok'/>
+							</form>
+					</div>
 					<br/><br/>
 					{{ show_comments(c.id) }}
 				</div>
@@ -22,11 +37,61 @@
 
 {% extends "header.html" %}
 
+{% block header %}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+{% endblock %}
 {% block title %}
 {{ post.title }}
 {% endblock %}
 
 {% block body %}
+	<script>
+		function show_hidden(uid){
+			div = document.getElementById(uid);
+			if (div.style.display == "none"){
+				div.style.display = "block";
+			}
+			else{
+				div.style.display = "none";
+			}
+		}
+
+		function post_comment(msgId,divId,cid,pid,sid){
+			var xhttp = new XMLHttpRequest();
+			console.log("ON POST COMMENT")
+			div = document.getElementById(divId);
+			msg = document.getElementById(msgId).value;
+			//div.innerHTML = "TESTE 123"
+			xhttp.onreadystatechange = function(){
+				if (this.readyState == 4 && this.status == 200){
+					var ncid = this.responseText;
+					div.innerHTML = ncid;
+					div_innerHTML = "<a href=\"comment" + ncid + "\" data-toggle=\"collapse\">[+]</a> &nbsp;&nbsp;\n";
+					//div_innerHTML += "Author: <a href=\"" +  + "</a> <br>\n";
+					div_innerHTML += "<div id=\"comment\"" + ncid + "class=\"collapse in\">\n";
+					div_innerHTML += "     " + msg + "<br>\n";
+					div_innerHTML += "      <a href=\"javascript:void(0)\" onclick=\"show_hidden('write_comment" + ncid +"')\"> comment </a>\n";
+					div_innerHTML += "	    &nbsp &nbsp <a href=\"#\"> delete </a>\n";
+					div_innerHTML += "      <div id=\"write_comment" + ncid + "\" style=\"display: none;\">\n";
+					div_innerHTML += "			<form action = \"#\">\n";
+					div_innerHTML += "				<textarea name='message' rows='10' cols='30'></textarea> <br><br>\n";
+					div_innerHTML += "				<input type='submit' value='ok'>\n";
+					div_innerHTML += "		    </form>\n";
+					div_innerHTML += "		</div>\n";
+					div_innerHTML += "</div>\n";
+					div.innerHTML = div_innerHTML;
+					//div.innerHTML = "TEST 456"
+				}
+			};
+			url = "/sub/" + sid + "/post/" + pid + "/" + cid + "/postcomment/";
+			content = "message=" + msg;
+			xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			xhttp.open("POST",url,true);
+			console.log("url is" + url);
+			//xhttp.send(content);
+
+		}
+	</script>
 	<br/><br/>
 	<h2> {{ post.title }} </h2>
 	<br/>
