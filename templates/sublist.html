@@ -1,0 +1,34 @@
+
+{% extends "header.html" %}
+{% block body %}
+	<script>
+		function add_sub(sid,sub_name){
+			let xhttp = new XMLHttpRequest();
+			let sub_ul = document.getElementById("mysubs");
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					sub_innHTML = sub_ul.innerHTML;
+					sub_innHTML += "<li><a href=\"#\">"+sub_name+"</a></li>\n";
+					sub_ul.innerHTML = sub_innHTML;
+				}
+			};
+			
+		}
+	</script>
+	{{ super() }}
+
+
+	<h2> SUBS </h2>
+	{% for sub in subs %}
+	<div>
+		{% if session["uid"] %}
+			<a href="javascript:void(0)" onclick=""><span class="glyphicon glyphicon-plus"></span></a>
+		{% endif %}
+		<a href="{{ url_for('show_sub',sid=sub.id) }}">{{ sub.name }}</a>
+	<br/>
+	{% endfor %}
+	<br/><br/>
+	<a href="{{ url_for('create_sub') }}"> Create new Sub </a>
+	
+{% endblock %}
+

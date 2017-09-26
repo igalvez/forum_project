@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block body %}
-
+	{{ super() }}
 	<h2> Sign up </h2>
 	{% with messages = get_flashed_messages() %}
 		

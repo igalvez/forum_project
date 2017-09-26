@@ -1,19 +1,17 @@
-<html>
-<head>
-	<title> Main </title>
 
-</head>
-<body>
-	<a href="{{ url_for('login') }}"> Login </a> &nbsp; &nbsp; <a href="{{ url_for('new_user') }}"> Sign up </a>
-	<br><br/><br/>
+{% extends "header.html" %}
+{% block body %}
+	{{ super() }}
 
-	<h2> SUBS </h2>
-	{% for sub in subs %}
-	<a href="{{ url_for('show_sub',sid=sub.id) }}">{{ sub.name }}</a>
-	<br/>
+	<h2> NEW </h2>
+	{% for post in posts %}
+	<div class="well">
+		<a href="{{ url_for('show_post',sid=post.sub_id,pid=post.id) }}">{{ post.title }}</a> &nbsp;&nbsp; 
+		<a href="{{ url_for('show_sub', sid=post.sub_id) }}"> {{ g.get_sub_name(post.sub_id) }}</a><br/>
+		{{ post.message }}
+	</div>
 	{% endfor %}
 	<br/><br/>
 	<a href="{{ url_for('create_sub') }}"> Create new Sub </a>
 	
-</body>
-</html>
+{% endblock %}

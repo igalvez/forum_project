@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session,flash
+from flask import Flask, render_template, request, redirect, url_for, session,flash, g
 app = Flask(__name__)
 app.secret_key = 'teste'
 
@@ -15,6 +15,9 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 dbsession = DBSession()
+
+guest_subs = [1, 2]
+
 
 
 # FORMS ------------------------------------
@@ -42,20 +45,31 @@ def get_author(uid):
 		return ''
 	return user.username 
 
+def get_sub_name(sub_id):
+	sub = dbsession.query(Sub).filter_by(id=sub_id).first()
+	if not sub:
+		return ""
+	return sub.name
 #------------------------------------------------------------
+@app.before_request
+def before_req():
+	subs = dbsession.query(Sub).filter(Sub.id.in_(guest_subs)).all()
+	g.mysubs = subs
+
 @app.route('/')
 def main():
-	subs = dbsession.query(Sub).all()
-	return render_template('index.html',subs=subs)
+	g.get_sub_name = get_sub_name
+	#posts = None
+	#if 'uid' not in session:
+	posts = dbsession.query(Post).filter(Post.sub_id.in_(guest_subs)).order_by(Post.date)
+	#subs = dbsession.query(Sub).all()
+	return render_template('index.html',posts=posts)
 	
 
 @app.route('/dashboard')
 def dashboard():
-	if 'uid' not in session:
-		return 'Login required to access this feature'
-	uid = session['uid']
-	user = dbsession.query(User).filter_by(id=uid).one()
-	return redirect(url_for('show_user',user_id=user.id))
+	subs = dbsession.query(Sub).all()
+	return render_template('sublist.html',subs=subs)
 
 
 @app.route('/signup', methods=['GET','POST'])
@@ -210,9 +224,15 @@ def post_comment(sid,pid,cid):
 		print " message is %s"%request.form["message"]
 		dbsession.add(newComment)
 		dbsession.commit()
-		return newComment.id
+		return str(newComment.id)
 	print "this is A GET request"
 	return redirect(url_for("show_posts"))
+
+
+#@app.route('/search/<int:sid>/',methods=['GET','POST'])
+#def search(sid):#
+#	if request.method == 'POST':
+#		results = dbsession.query(Sub).filter_by(name=request.form["search-term"]
 
 @app.errorhandler(404)
 def page_not_found(err):

@@ -16,16 +16,20 @@
 					{{ prefix }}
 					{{ c.message }}
 					<br/>
-					<a href="javascript:void(0)" onclick="show_hidden('write_comment{{c.id}}')"> comment </a>
+					{% if session["uid"] %}
+						<a href="javascript:void(0)" onclick="show_hidden('write_comment{{c.id}}')"> comment </a>
+					{% endif %}
 					{% if (session["uid"]==c.user_id or session["uid"]==sub.admin_id) %}
 						&nbsp &nbsp <a href="{{ url_for('delete_comment', sid=sub.id, pid=post.id, cid=c.id) }}"> delete </a>
 					{% endif %}
 					<div id="write_comment{{c.id}}" style="display: none;">
-						<form action="#" onsubmit="post_comment(event, 'message{{c.id}}','write_comment{{c.id}}','{{c.id}}','{{post.id}}','{{sub.id}}')">
+						<form action="#" onsubmit="post_comment(event, 'message{{c.id}}','subcomment{{c.id}}','{{c.id}}','{{post.id}}','{{sub.id}}')">
 							<textarea id="message{{c.id}}" name='message' rows='10' cols='30'></textarea>
 							<br/><br/>
-							<input type='submit' value='ok'/>
+							<input type='submit' value='ok' onclick="show_hidden('write_comment{{c.id}}')"/>
 						</form>
+					</div>
+					<div id="subcomment{{c.id}}" style="display: none;">
 					</div>
 					<br/><br/>
 					{{ show_comments(c.id) }}
@@ -38,16 +42,16 @@
 {% extends "header.html" %}
 
 {% block header %}
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 {% endblock %}
 {% block title %}
 {{ post.title }}
 {% endblock %}
 
 {% block body %}
+	{{ super() }}
 	<script>
-	function show_hidden(uid) {
-			div = document.getElementById(uid);
+		function show_hidden(uid) {
+			let div = document.getElementById(uid);
 			if (div.style.display == "none") {
 				div.style.display = "block";
 			} else {
@@ -59,31 +63,39 @@
 			let xhttp = new XMLHttpRequest();
 			console.log("ON POST COMMENT")
 			let div = document.getElementById(divId);
-			let msg = document.getElementById(msgId).value;
+			
+			let msg = document.getElementById(msgId);
+			console.log("message is " + msg.value )
 			//div.innerHTML = "TESTE 123"
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
+					div.style = "block";
 					let ncid = this.responseText;
-					div.innerHTML = ncid;
-					let div_innerHTML = "<a href=\"comment" + ncid + "\" data-toggle=\"collapse\">[+]</a> &nbsp;&nbsp;\n";
+
+					let div_innerHTML = "<div class=\"well\">\n";
+					div_innerHTML +=    "	<a href=\"comment" + ncid + "\" data-toggle=\"collapse\">[+]</a> &nbsp;&nbsp;";
 					//div_innerHTML += "Author: <a href=\"" +  + "</a> <br>\n";
-					div_innerHTML += "<div id=\"comment\"" + ncid + "class=\"collapse in\">\n";
-					div_innerHTML += "     " + msg + "<br>\n";
-					div_innerHTML += "      <a href=\"javascript:void(0)\" onclick=\"show_hidden('write_comment" + ncid + "')\"> comment </a>\n";
-					div_innerHTML += "	    &nbsp &nbsp <a href=\"#\"> delete </a>\n";
-					div_innerHTML += "      <div id=\"write_comment" + ncid + "\" style=\"display: none;\">\n";
-					div_innerHTML += "			<form action = \"#\">\n";
-					div_innerHTML += "				<textarea name='message' rows='10' cols='30'></textarea> <br><br>\n";
-					div_innerHTML += "				<input type='submit' value='ok'>\n";
-					div_innerHTML += "		    </form>\n";
-					div_innerHTML += "		</div>\n";
-					div_innerHTML += "</div>\n";
-					div.innerHTML = div_innerHTML;
+					div_innerHTML +=    "	<div id=\"comment" + ncid + "\" class=\"collapse in\">";
+					div_innerHTML +=    "   	" + msg.value + "<br>";
+					div_innerHTML +=    "      <a href=\"javascript:void(0)\" onclick=\"show_hidden('write_comment" + ncid + "')\"> comment </a>";
+					div_innerHTML +=    "	    &nbsp &nbsp <a href=\"#\"> delete </a>";
+					div_innerHTML +=    "      <div id=\"write_comment" + ncid + "\" style=\"display: none;\">";
+					div_innerHTML +=    "			<form action = \"#\" onsubmit=\"post_comment(event, 'message"+ncid+"','subcomment"+ncid+"','"+ncid+"','"+pid+"','"+sid+"')\">"
+					div_innerHTML +=    "				<textarea id='message"+ncid+"' name='message' rows='10' cols='30'></textarea> <br><br>";
+					div_innerHTML +=    "				<input type='submit' onclick=\"show_hidden('write_comment"+ncid+"')\"/>";
+					div_innerHTML +=    "		    </form>";
+					div_innerHTML +=    "		</div>";
+					div_innerHTML +=    "      <div id=\"subcomment"+ncid+"\" style=\"display: none;\"></div>"
+					div_innerHTML +=    "	</div>";
+					div_innerHTML +=    "</div>";
+					div.innerHTML += div_innerHTML;
+					msg.value = "";
+
 					//div.innerHTML = "TEST 456"
-				};
+				}
 			};
 			let url = "/sub/" + sid + "/post/" + pid + "/" + cid + "/postcomment/";
-			let content = "message=" + msg;
+			let content = "message=" + msg.value;
 			xhttp.open("POST", url, true);
 			xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
 			console.log("url is" + url);
