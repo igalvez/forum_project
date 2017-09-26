@@ -1,6 +1,7 @@
 import sys
-from sqlalchemy import String, Integer, Text, Time, ForeignKey, Column, Boolean
+from sqlalchemy import String, Integer, Text, Time, ForeignKey, Column, Boolean, PickleType
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
@@ -8,18 +9,34 @@ import md5
 
 Base = declarative_base()
 
+class MutableList(Mutable, list):
+    def append(self, value):
+        list.append(self, value)
+        self.changed()
+
+    @classmethod
+    def coerce(cls, key, value):
+        if not isinstance(value, MutableList):
+            if isinstance(value, list):
+                return MutableList(value)
+            return Mutable.coerce(key, value)
+        else:
+            return value
+
 class User(Base):
 	__tablename__ = 'user'
 	id = Column(Integer, primary_key=True)
 	username = Column(String(20), nullable=False)
 	password = Column(String(20), nullable=False)
 	email = Column(String(50)) # Erase this when user is deleted
+	subs = Column(MutableList.as_mutable(PickleType))
 	#active = Column(Boolean, default=True) When a user is deleted we set this to false
 
 	def __init__(self,username,password,email):
 		self.username = username
 		self.email = email
 		self.password = md5.new(password).hexdigest()
+		self.subs = []
 
 	def verify_password(self,password):
 		return md5.new(password).hexdigest()==self.password

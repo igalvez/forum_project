@@ -16,7 +16,7 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 dbsession = DBSession()
 
-guest_subs = [1, 2]
+guest_subs = []
 
 
 
@@ -53,7 +53,21 @@ def get_sub_name(sub_id):
 #------------------------------------------------------------
 @app.before_request
 def before_req():
-	subs = dbsession.query(Sub).filter(Sub.id.in_(guest_subs)).all()
+	if "uid" in session:
+		print "logged as uid=%s , username=%s"%(session["uid"],session["username"])
+		try:
+			user = dbsession.query(User).filter_by(id=session["uid"]).first()
+			print "user subs ",str(user.subs)
+			mysubs = user.subs
+		except:
+			mysubs = []
+	else:
+		print "not logged"
+		mysubs = guest_subs
+	print "subs = ", str(mysubs)
+	subs = []
+	if mysubs:
+		subs = dbsession.query(Sub).filter(Sub.id.in_(mysubs)).all()
 	g.mysubs = subs
 
 @app.route('/')
@@ -84,6 +98,7 @@ def new_user():
 			return render_template('signup.html',form=form)
 
 		try:
+			print "FUNCIONA, CARALHO"
 			newUser = User(username=request.form['username'], password=request.form['password'], email=request.form['email'])		
 			dbsession.add(newUser)
 			dbsession.commit()
@@ -233,6 +248,24 @@ def post_comment(sid,pid,cid):
 #def search(sid):#
 #	if request.method == 'POST':
 #		results = dbsession.query(Sub).filter_by(name=request.form["search-term"]
+@app.route('/savesub/<int:sid>/',methods=['GET','POST'])
+def save_sub(sid):
+	print "SAVE SUB"
+	if "uid" in session:
+		print "SAVE SUB uid=%s , username=%s"%(session["uid"],session["username"])
+		user = dbsession.query(User).filter_by(id=session["uid"]).first()
+		if sid not in user.subs:
+			print "GOTTA SAVE sub id ",sid
+			x = user.subs
+			print "x type is",type(x)
+			print "x is ",str(x)
+			user.subs.append(sid)
+			print "new user subs = ", str(user.subs)
+			dbsession.add(user)
+			dbsession.commit()
+		return ""
+	print "RETURNING FALSE"
+	return ""
 
 @app.errorhandler(404)
 def page_not_found(err):

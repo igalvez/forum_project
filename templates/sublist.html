@@ -12,7 +12,13 @@
 					sub_ul.innerHTML = sub_innHTML;
 				}
 			};
-			
+			let url = "/savesub/" + sid +"/";
+			xhttp.open("POST",url,true);
+			xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			console.log("url is" + url);
+			xhttp.send();
+			event.preventDefault();
+	
 		}
 	</script>
 	{{ super() }}
@@ -22,7 +28,7 @@
 	{% for sub in subs %}
 	<div>
 		{% if session["uid"] %}
-			<a href="javascript:void(0)" onclick=""><span class="glyphicon glyphicon-plus"></span></a>
+			<a href="javascript:void(0)" onclick="add_sub('{{ sub.id }}','{{ sub.name }}')"><span class="glyphicon glyphicon-plus"></span></a>
 		{% endif %}
 		<a href="{{ url_for('show_sub',sid=sub.id) }}">{{ sub.name }}</a>
 	<br/>
