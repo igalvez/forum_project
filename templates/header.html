@@ -23,8 +23,8 @@
     				{% if sub %}
       					<li><a href="{{ url_for('show_sub',sid=sub.id) }}">{{ sub.name }}</a></li>
       				{% endif %}
-      				<li class="active"><a href="#">Hot</a></li>
-      				<li><a href="#">New</a></li>
+      				<li><a href="#">Hot</a></li>
+      				<li class="active"><a href="#">New</a></li>
     			</ul>
     			<ul class="nav navbar-nav navbar-right">
               <li>
@@ -48,7 +48,7 @@
     						<span class="caret"></span> My Subs</a>
     						<ul id="mysubs" class="dropdown-menu dropdown-menu-left">
                   {% for mysub in g.mysubs %}
-    							<li><a href="{{ url_for('show_sub',sid=mysub.id) }}"> {{ mysub.name }} </a></li>
+    							<li><a href="{{ url_for('show_sub',sid=mysub.id) }}"> {{ mysub.name }}</a></li>
                   {% endfor %}
     						</ul>
     				</li>

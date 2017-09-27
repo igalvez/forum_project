@@ -8,7 +8,7 @@
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
 					sub_innHTML = sub_ul.innerHTML;
-					sub_innHTML += "<li><a href=\"#\">"+sub_name+"</a></li>\n";
+					sub_innHTML += "<li><a href=\"/sub/" + sid +"\">"+sub_name+"</a></li>\n";
 					sub_ul.innerHTML = sub_innHTML;
 				}
 			};

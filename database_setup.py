@@ -29,14 +29,16 @@ class User(Base):
 	username = Column(String(20), nullable=False)
 	password = Column(String(20), nullable=False)
 	email = Column(String(50)) # Erase this when user is deleted
-	subs = Column(MutableList.as_mutable(PickleType))
+	subs = Column(Text)
+	saved_posts = Column(Text)
 	#active = Column(Boolean, default=True) When a user is deleted we set this to false
 
 	def __init__(self,username,password,email):
 		self.username = username
 		self.email = email
 		self.password = md5.new(password).hexdigest()
-		self.subs = []
+		self.subs = ""
+		self.saved_posts = ""
 
 	def verify_password(self,password):
 		return md5.new(password).hexdigest()==self.password

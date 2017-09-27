@@ -73,9 +73,13 @@ def before_req():
 @app.route('/')
 def main():
 	g.get_sub_name = get_sub_name
+	mysubs = guest_subs
+	if "uid" in session:	
+		user = dbsession.query(User).filter_by(id=session["uid"]).first()
+		mysubs = user.subs.strip(",").split(",")
 	#posts = None
 	#if 'uid' not in session:
-	posts = dbsession.query(Post).filter(Post.sub_id.in_(guest_subs)).order_by(Post.date)
+	posts = dbsession.query(Post).filter(Post.sub_id.in_(mysubs)).order_by(Post.date)
 	#subs = dbsession.query(Sub).all()
 	return render_template('index.html',posts=posts)
 	
@@ -254,12 +258,16 @@ def save_sub(sid):
 	if "uid" in session:
 		print "SAVE SUB uid=%s , username=%s"%(session["uid"],session["username"])
 		user = dbsession.query(User).filter_by(id=session["uid"]).first()
-		if sid not in user.subs:
+		if not user.subs:
+			user.subs = str(sid)
+			return ""
+		sub_list = user.subs.split(',')
+		if sid not in sub_list:
 			print "GOTTA SAVE sub id ",sid
 			x = user.subs
 			print "x type is",type(x)
 			print "x is ",str(x)
-			user.subs.append(sid)
+			user.subs += "," + str(sid)
 			print "new user subs = ", str(user.subs)
 			dbsession.add(user)
 			dbsession.commit()
