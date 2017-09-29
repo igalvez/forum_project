@@ -275,6 +275,29 @@ def save_sub(sid):
 	print "RETURNING FALSE"
 	return ""
 
+@app.route('/removesub/<int:sid>/',methods=['GET','POST'])
+def remove_sub(sid):
+	print "REMOVE SUB"
+	if "uid" in session:
+		print "REMOVE SUB uid=%s , username=%s"%(session["uid"],session["username"])
+		user = dbsession.query(User).filter_by(id=session["uid"]).first()
+		if not user.subs:
+			user.subs = str(sid)
+			return ""
+		sub_list = user.subs.split(',')
+		if sid in sub_list:
+			print "GOTTA REMOVE sub id ",sid
+			sub_list.remove(sid)
+			print "x type is",type(x)
+			print "x is ",str(x)
+			user.subs = ",".join(sub_list)
+			print "new user subs = ", str(user.subs)
+			dbsession.add(user)
+			dbsession.commit()
+		return ""
+	print "RETURNING FALSE"
+	return 
+
 @app.errorhandler(404)
 def page_not_found(err):
 	return "oh noo! This is not the page you are looking for! " + str(err)

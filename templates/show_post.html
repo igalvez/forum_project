@@ -24,9 +24,9 @@
 					{% endif %}
 					<div id="write_comment{{c.id}}" style="display: none;">
 						<form action="#" onsubmit="post_comment(event, 'message{{c.id}}','subcomment{{c.id}}','{{c.id}}','{{post.id}}','{{sub.id}}')">
-							<textarea id="message{{c.id}}" name='message' rows='10' cols='30'></textarea>
+							<textarea id="message{{c.id}}" name='message' rows='6' cols='100'></textarea>
 							<br/><br/>
-							<input type='submit' value='ok' onclick="show_hidden('write_comment{{c.id}}')"/>
+							<input type='submit' value='ok' onclick="show_hidden('write_comment{{c.id}}')" value='ok'/>
 						</form>
 					</div>
 					<div id="subcomment{{c.id}}" style="display: none;">
@@ -74,15 +74,15 @@
 
 					let div_innerHTML = "<div class=\"well\">\n";
 					div_innerHTML +=    "	<a href=\"comment" + ncid + "\" data-toggle=\"collapse\">[+]</a> &nbsp;&nbsp;";
-					//div_innerHTML += "Author: <a href=\"" +  + "</a> <br>\n";
+					div_innerHTML += "Author: <a href=\"/admin/user/show/{{ session['uid'] }}\"> {{ session['username'] }} </a>  <br>\n";
 					div_innerHTML +=    "	<div id=\"comment" + ncid + "\" class=\"collapse in\">";
 					div_innerHTML +=    "   	" + msg.value + "<br>";
 					div_innerHTML +=    "      <a href=\"javascript:void(0)\" onclick=\"show_hidden('write_comment" + ncid + "')\"> comment </a>";
 					div_innerHTML +=    "	    &nbsp &nbsp <a href=\"#\"> delete </a>";
 					div_innerHTML +=    "      <div id=\"write_comment" + ncid + "\" style=\"display: none;\">";
 					div_innerHTML +=    "			<form action = \"#\" onsubmit=\"post_comment(event, 'message"+ncid+"','subcomment"+ncid+"','"+ncid+"','"+pid+"','"+sid+"')\">"
-					div_innerHTML +=    "				<textarea id='message"+ncid+"' name='message' rows='10' cols='30'></textarea> <br><br>";
-					div_innerHTML +=    "				<input type='submit' onclick=\"show_hidden('write_comment"+ncid+"')\"/>";
+					div_innerHTML +=    "				<textarea id='message"+ncid+"' name='message' rows='6' cols='100'></textarea> <br><br>";
+					div_innerHTML +=    "				<input type='submit' onclick=\"show_hidden('write_comment"+ncid+"')\" value='ok'/>";
 					div_innerHTML +=    "		    </form>";
 					div_innerHTML +=    "		</div>";
 					div_innerHTML +=    "      <div id=\"subcomment"+ncid+"\" style=\"display: none;\"></div>"
@@ -106,13 +106,26 @@
 	<br/><br/>
 	<h2> {{ post.title }} </h2>
 	<br/>
-	Author: {{ get_author(post.user_id) }} <br/>
-	{{ post.message }}
+	<div class="panel panel-primary">
+		<div class="panel-body">
+			Author: {{ get_author(post.user_id) }}
+		</div>
+		<div class="panel-body">
+			{{ post.message }}
+		</div>
+	</div>
+	<div class='well'>
+	<div id="write_comment0">
+		<form action="#" onsubmit="post_comment(event, 'message0','subcomment0','0','{{post.id}}','{{sub.id}}')">
+			<textarea id="message0" name='message' rows='6' cols='100'></textarea>
+			<br/><br/>
+			<input type='submit' value='ok'/>
+		</form>
+	</div>
+	<div id="subcomment0" style="display: none;">
+	</div>
 	<br/><br/><br/>
 	{{ show_comments(0) }}
-	<br/>
-	<a href="{{ url_for('write_comment',sid=sub.id, pid=post.id, cid=0)}}">Comment </a>
-	<br/><br/>
-	<a href="{{ url_for('show_sub',sid=sub.id) }}"> Back </a>
+
 
 {% endblock %}

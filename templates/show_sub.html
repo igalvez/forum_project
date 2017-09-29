@@ -1,8 +1,56 @@
 {% extends "header.html" %}
 {% block body %}
+	<script>
+		function subscribe(){
+			let xhttp = new XMLHttpRequest();
+			let sub_ul = document.getElementById("mysubs");
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					sub_innHTML = sub_ul.innerHTML;
+					sub_innHTML += "<li><a href=\"{{ url_for('show_sub', sid=sub.id)}}\"</a></li>\n";
+					sub_ul.innerHTML = sub_innHTML;
+				}
+			};
+			let url = "{{ url_for('save_sub', sid=sub.id) }}";
+			xhttp.open("POST",url,true);
+			xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			console.log("url is" + url);
+			xhttp.send();
+			event.preventDefault();
+		}
+
+		function unsubscribe(){
+			let xhttp = new XMLHttpRequest();
+			let sub_ul = document.getElementById("mysubs");
+			xhttp.onreadystatechange = function() {
+				if (this.readyState == 4 && this.status == 200) {
+					sub_innHTML = sub_ul.innerHTML;
+					sub_innHTML -= "<li><a href=\"{{ url_for('show_sub', sid=sub.id)}}\"</a></li>\n";
+					sub_ul.innerHTML = sub_innHTML;
+				}
+			};
+			let url = "{{ url_for('remove_sub', sid=sub.id) }}";
+			xhttp.open("POST",url,true);
+			xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			console.log("url is" + url);
+			xhttp.send();
+			event.preventDefault();
+		}
+	</script>
+
 	{{ super() }}
 
-	<h2> {{ sub.name }} </h2>
+	<h2> {{ sub.name }} </h2> <br/>
+	{% if session["uid"] %}
+		<div class="btn-group">
+			{% if sub in g.mysubs %}
+			<button type="button" class="btn btn-danger" onclick="unsubscribe()">Unsubscribe</button>
+			{% else %}
+			<button type="button" class="btn btn-success" onclick="subscribe()">Subscribe</button>
+			{% endif %}
+		</div>
+	{% endif %}
+	<br/><br/>
 	{% for post in posts %}
 	<a href="{{ url_for('show_post',sid=sub.id,pid=post.id) }}">{{ post.title }}</a>
 	<br/>
