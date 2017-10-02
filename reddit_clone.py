@@ -285,11 +285,11 @@ def remove_sub(sid):
 			user.subs = str(sid)
 			return ""
 		sub_list = user.subs.split(',')
-		if sid in sub_list:
+		print "sub_list is ",str(sub_list)
+		sid = str(sid)
+		if str(sid) in sub_list:
 			print "GOTTA REMOVE sub id ",sid
 			sub_list.remove(sid)
-			print "x type is",type(x)
-			print "x is ",str(x)
 			user.subs = ",".join(sub_list)
 			print "new user subs = ", str(user.subs)
 			dbsession.add(user)

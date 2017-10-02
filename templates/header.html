@@ -48,7 +48,7 @@
     						<span class="caret"></span> My Subs</a>
     						<ul id="mysubs" class="dropdown-menu dropdown-menu-left">
                   {% for mysub in g.mysubs %}
-    							<li><a href="{{ url_for('show_sub',sid=mysub.id) }}"> {{ mysub.name }}</a></li>
+    							<li id="mysubs-{{ mysub.name }}"><a href="{{ url_for('show_sub',sid=mysub.id) }}"> {{ mysub.name }}</a></li>
                   {% endfor %}
     						</ul>
     				</li>

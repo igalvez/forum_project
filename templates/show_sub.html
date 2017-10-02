@@ -6,9 +6,14 @@
 			let sub_ul = document.getElementById("mysubs");
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
+					/*sub_li = document.createElement("li");
+					sub_a = document.createTextNode("<a href=\"{{ url_for('show_sub', sid=sub.id)}}\"> {{ sub.name }} </a>");
+					sub_li.appendChild(sub_a);
+					sub_ul.appendChild(sub_li);*/
 					sub_innHTML = sub_ul.innerHTML;
-					sub_innHTML += "<li><a href=\"{{ url_for('show_sub', sid=sub.id)}}\"</a></li>\n";
+					sub_innHTML += "<li><a href=\"{{ url_for('show_sub', sid=sub.id)}}\"> {{ sub.name }} </a></li>\n";
 					sub_ul.innerHTML = sub_innHTML;
+					document.getElementById("subscription").innerHTML = "<button type=\"button\" class=\"btn btn-danger\" onclick=\"unsubscribe()\">Unsubscribe</button>";
 				}
 			};
 			let url = "{{ url_for('save_sub', sid=sub.id) }}";
@@ -21,12 +26,12 @@
 
 		function unsubscribe(){
 			let xhttp = new XMLHttpRequest();
-			let sub_ul = document.getElementById("mysubs");
+			let sub_li = document.getElementById("mysubs-{{ sub.name }}");
 			xhttp.onreadystatechange = function() {
 				if (this.readyState == 4 && this.status == 200) {
-					sub_innHTML = sub_ul.innerHTML;
-					sub_innHTML -= "<li><a href=\"{{ url_for('show_sub', sid=sub.id)}}\"</a></li>\n";
-					sub_ul.innerHTML = sub_innHTML;
+					sub_li.parentNode.removeChild(sub_li);
+					document.getElementById("subscription").innerHTML = "<button type=\"button\" class=\"btn btn-success\" onclick=\"subscribe()\">Subscribe</button>";
+	
 				}
 			};
 			let url = "{{ url_for('remove_sub', sid=sub.id) }}";
@@ -42,7 +47,7 @@
 
 	<h2> {{ sub.name }} </h2> <br/>
 	{% if session["uid"] %}
-		<div class="btn-group">
+		<div id="subscription" class="btn-group">
 			{% if sub in g.mysubs %}
 			<button type="button" class="btn btn-danger" onclick="unsubscribe()">Unsubscribe</button>
 			{% else %}
