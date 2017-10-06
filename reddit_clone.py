@@ -4,7 +4,7 @@ app.secret_key = 'teste'
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from database_setup import Base, Sub, User, Post, Comment
+from database_setup import Base, Sub, User, Post, Comment, Vote
 import sqlalchemy.orm.exc
 from wtforms import Form, validators, StringField, PasswordField, SubmitField
 
@@ -189,6 +189,13 @@ def show_post(sid,pid):
 		dbsession.add(newComment)
 		dbsession.commit()
 		return newComment.id
+
+	if "uid" in session:
+		vote = dbsession.query(Vote).filter_by(user_id=session["uid"]).filter_by(post_id=pid).first()
+		if vote:
+			g.post_vote = vote.direction
+		else:
+			g.post_vote = "-"
 	sub = dbsession.query(Sub).filter_by(id=sid).one()
 	post = dbsession.query(Post).filter_by(id=pid).one()
 	comments = dbsession.query(Comment).filter_by(post_id=post.id).filter_by(parent_id=0)
@@ -297,6 +304,61 @@ def remove_sub(sid):
 		return ""
 	print "RETURNING FALSE"
 	return 
+
+
+@app.route('/upvote/<int:pid>', methods=['GET','POST'])
+def post_upvote(pid):
+	if "uid" not in session:
+		return ""
+
+	vote = dbsession.query(Vote).filter_by(user_id=session["uid"]).filter_by(post_id=pid).first()
+	post = dbsession.query(Post).filter_by(id=pid).first()
+
+	#Comment(message=request.form['message'], user_id=session['uid'], post_id=pid, parent_id=cid)
+	if not vote:
+		post.upvote += 1
+		vote = Vote(direction="u", user_id=session["uid"], post_id=pid, comment_id=0)
+		dbsession.add(vote)
+	# If user hits a upvote again, cancel it
+	elif vote.direction == "u":
+		post.upvote -= 1
+		dbsession.remove(vote)
+	# If user had previously downvoted we have to increment by two, as to cancel his previous downvote and then add an upvote
+	elif vote.direction =="d":
+		post.upvote +=2
+		vote.direction("u")
+		dbsession.add(vote)
+
+	dbsession.add(post)
+	dbsession.commit()
+	return ""
+
+
+@app.route('/downvote/<int:pid>', methods=['GET','POST'])
+def post_downvote(pid):
+	if "uid" not in session:
+		return ""
+	vote = dbsession.query(Vote).filter_by(user_id=session["uid"]).filter_by(post_id=pid).first()
+	post = dbsession.query(Post).filter_by(id=pid).first()
+
+	#Comment(message=request.form['message'], user_id=session['uid'], post_id=pid, parent_id=cid)
+	if not vote:
+		post.upvote -= 1
+		vote = Vote(direction="d", user_id=session["uid"], post_id=pid, comment_id=0)
+		dbsession.add(vote)
+	# If user hits a downvote again, cancel it
+	elif vote.direction == "d":
+		post.upvote += 1
+		dbsession.remove(vote)
+	# If user had previously upvoted we have to decrement by two, as to cancel his previous upvote and then add a downvote
+	elif vote.direction =="u":
+		post.upvote -=2
+		vote.direction("d")
+		dbsession.add(vote)
+
+	dbsession.add(post)
+	dbsession.commit()
+	return ""
 
 @app.errorhandler(404)
 def page_not_found(err):

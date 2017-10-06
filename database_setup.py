@@ -1,5 +1,5 @@
 import sys
-from sqlalchemy import String, Integer, Text, Time, ForeignKey, Column, Boolean, PickleType
+from sqlalchemy import String, Integer, Text, Time, ForeignKey, Column, Boolean, PickleType, CHAR
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.ext.mutable import Mutable
 from sqlalchemy.orm import relationship
@@ -83,6 +83,17 @@ class Comment(Base):
 	parent_id = Column(Integer,ForeignKey('comment.id'))
 	user = relationship(User)
 	post = relationship(Post)
+
+class Vote(Base):
+	__tablename__ = 'vote'
+	id = Column(Integer,primary_key=True)
+	direction = Column(CHAR, nullable=False)
+	user_id = Column(Integer,ForeignKey('user.id'))
+	post_id = Column(Integer,ForeignKey('post.id'))
+	comment_id = Column(Integer,ForeignKey('comment.id'))
+	user = relationship(User)
+	post = relationship(Post)
+	comment = relationship(Comment)
 
 
 engine = create_engine('sqlite:///reddit.db')

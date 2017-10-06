@@ -41,7 +41,9 @@
 
 {% extends "header.html" %}
 
-{% block header %}
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/static/css/posts.css">
 {% endblock %}
 {% block title %}
 {{ post.title }}
@@ -82,7 +84,7 @@
 					div_innerHTML +=    "      <div id=\"write_comment" + ncid + "\" style=\"display: none;\">";
 					div_innerHTML +=    "			<form action = \"#\" onsubmit=\"post_comment(event, 'message"+ncid+"','subcomment"+ncid+"','"+ncid+"','"+pid+"','"+sid+"')\">"
 					div_innerHTML +=    "				<textarea id='message"+ncid+"' name='message' rows='6' cols='100'></textarea> <br><br>";
-					div_innerHTML +=    "				<input type='submit' onclick=\"show_hidden('write_comment"+ncid+"')\" value='ok'/>";
+					div_innerHTML +=    "				<input type='submit' onclick=\"show_hidden('write_comment"+ncid+"')\" value='/>";
 					div_innerHTML +=    "		    </form>";
 					div_innerHTML +=    "		</div>";
 					div_innerHTML +=    "      <div id=\"subcomment"+ncid+"\" style=\"display: none;\"></div>"
@@ -102,17 +104,68 @@
 			xhttp.send(content);
 			event.preventDefault();
 		}
+
+		function post_vote(up){
+			let xhttp = new XMLHttpRequest();
+			//div.innerHTML = "TESTE 123"
+			xhttp.onreadystatechange = function() {
+				if (up){
+					document.getElementById(upvote).style.color = "red"
+					document.getElementById(downvote).style.color = "blue"
+				}
+				else {
+					document.getElementById(upvote).style.color = "blue"
+					document.getElementById(downvote).style.color = "red"
+				}
+			};
+			if(up){
+				let url = "/upvote/{{ post.id }}"
+			}
+			else{
+				let url = "/downvote/{{ post.id }}"
+			}
+			xhttp.open("POST", url, true);
+			xhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+			console.log("url is" + url);
+			xhttp.send();
+			event.preventDefault();
+		}
 	</script>
 	<br/><br/>
 	<h2> {{ post.title }} </h2>
 	<br/>
 	<div class="panel panel-primary">
 		<div class="panel-body">
-			Author: {{ get_author(post.user_id) }}
+			<div class="voting-container">
+				<ul>
+					{% set upcolour = "blue" %}
+					{% set downcolour = "blue" %}
+					{% if g.post_vote %}
+					{% if g.post_vote == "u" %}
+						{% set upcolour = "red" %}
+					{% elif g.post_vote == "d" %}
+						{% set downcolour = "red" %}
+					{% endif %}
+					{% endif %}
+					<li><a href="javascript:void(0)" onclick="post_upvote(true)"><span id="upvote" class="glyphicon glyphicon-arrow-up" style="color: {{ upcolour }}"></span></a></li>
+					<li><a href="javascript:void(0)" onclick="post_vote(false)"><span id="downvote" class="glyphicon glyphicon-arrow-down" style="color: {{ downcolour }}"></span></a></li>
+				</ul>
+			</div>
+			<div class="message-container">
+				<div>
+					Author: <a href="{{ url_for('show_user',user_id=post.user_id) }}">{{ get_author(post.user_id) }}</a>
+				</div>
+				<div>
+					{{ post.message }}
+				</div>
+			</div>
+		</div>
+		<!--<div class="panel-body">
+			Author: <a href="{{ url_for('show_user',user_id=post.user_id) }}">{{ get_author(post.user_id) }}</a>
 		</div>
 		<div class="panel-body">
 			{{ post.message }}
-		</div>
+		</div>-->
 	</div>
 	<div class='well'>
 	<div id="write_comment0">

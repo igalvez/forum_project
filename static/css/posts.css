@@ -1,0 +1,19 @@
+.text_container {
+
+}
+
+div.voting-container {
+	display: inline-block;
+	margin-right: 100px;
+}
+
+div.voting-container ul{
+	list-style-type: none;
+}
+div.voting-container ul li{
+	vertical-align: center;
+}
+
+div.message-container {
+	display: inline-block;
+}
